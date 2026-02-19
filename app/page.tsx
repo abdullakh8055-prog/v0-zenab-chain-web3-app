@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { Settings } from 'lucide-react';
 import { EISForm } from '@/components/eis-form';
-import { EISResult, EISResultData } from '@/components/eis-result';
+import { EISGauge } from '@/components/eis-gauge';
+import { StatCards } from '@/components/stat-cards';
+import { EISResultData } from '@/components/eis-result';
 
 export default function Home() {
   const [result, setResult] = useState<EISResultData | null>(null);
@@ -45,47 +48,97 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-12 md:py-20">
-        <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <div className="mb-6">
-              <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent mb-3">
-                ZENAB Chain
-              </h1>
-              <p className="text-lg text-slate-300">
-                Environmental Impact Score Verification
-              </p>
+    <main className="min-h-screen bg-black text-white">
+      <div className="container mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded border border-cyan-500 flex items-center justify-center">
+              <div className="w-6 h-6 border border-cyan-500 rounded" />
             </div>
-            <p className="text-slate-400 text-sm md:text-base leading-relaxed">
-              Submit air quality measurements and verify your Environmental Impact Score on the Algorand blockchain.
-              Scores of 70 and above are recorded permanently.
-            </p>
+            <div>
+              <h1 className="text-2xl font-bold text-white">ZENAB Chain</h1>
+              <p className="text-xs text-slate-400">Environmental Impact Verification</p>
+            </div>
           </div>
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 transition-colors text-sm font-medium">
+            <div className="w-2 h-2 bg-cyan-500 rounded-full" />
+            Algorand Testnet
+          </button>
+        </div>
 
-          {/* Content */}
-          <div className="space-y-8">
-            {result === null ? (
-              <div className="rounded-xl border border-slate-700 bg-slate-800/50 backdrop-blur-sm p-8">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-semibold text-foreground mb-2">Air Quality Data</h2>
-                  <p className="text-slate-400 text-sm">
-                    Enter your air quality measurements to calculate your Environmental Impact Score.
-                  </p>
+        {/* Main Title Section */}
+        <div className="mb-12 max-w-3xl">
+          <h2 className="text-5xl font-bold text-white mb-4 text-balance">
+            Decentralized Environmental Verification
+          </h2>
+          <p className="text-slate-400 text-lg leading-relaxed">
+            Submit air quality data to compute an Environmental Impact Score. Scores at or above 70 are permanently verified on the Algorand Testnet blockchain using a PyTEAL smart contract.
+          </p>
+        </div>
+
+        {/* Stats Cards */}
+        <StatCards verifiedCount={0} totalRecords={0} avgEIS={0} />
+
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column - Form */}
+          <div>
+            <div className="rounded-lg border border-slate-800 bg-slate-900/50 backdrop-blur-sm p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-6 h-6 text-cyan-400">
+                  <svg
+                    className="w-full h-full"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
                 </div>
-                <EISForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+                <h3 className="text-xl font-semibold text-white">Pollution Data Input</h3>
               </div>
-            ) : (
-              <EISResult result={result} onReset={handleReset} />
-            )}
+              <p className="text-slate-400 text-sm mb-6">
+                Enter air quality measurements to compute your Environmental Impact Score
+              </p>
+              {result === null ? (
+                <EISForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+              ) : (
+                <div className="space-y-4">
+                  <div className="rounded-lg bg-green-900/20 border border-green-700 p-4">
+                    <p className="text-green-200 text-sm font-medium mb-2">Score Verified</p>
+                    <p className="text-white text-2xl font-bold">{result.eis.toFixed(2)}</p>
+                  </div>
+                  {result.error && (
+                    <div className="rounded-lg bg-red-900/20 border border-red-700 p-4">
+                      <p className="text-red-200 text-sm">{result.error}</p>
+                    </div>
+                  )}
+                  {result.txId && (
+                    <div className="rounded-lg bg-slate-800/50 border border-slate-700 p-4">
+                      <p className="text-slate-400 text-xs mb-2">Transaction ID</p>
+                      <code className="text-cyan-400 text-xs font-mono break-all">{result.txId}</code>
+                    </div>
+                  )}
+                  <button
+                    onClick={handleReset}
+                    className="w-full px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-semibold transition-colors"
+                  >
+                    Submit Another
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Footer */}
-          <div className="mt-16 pt-8 border-t border-slate-700 text-center text-sm text-slate-400">
-            <p>
-              ZENAB Chain v1.0 • Powered by Algorand • Built with Next.js & Web3
-            </p>
+          {/* Right Column - Gauge */}
+          <div className="rounded-lg border border-slate-800 bg-slate-900/50 backdrop-blur-sm p-8 flex flex-col items-center justify-center">
+            <EISGauge score={result?.eis} isComplete={result !== null} />
           </div>
         </div>
       </div>

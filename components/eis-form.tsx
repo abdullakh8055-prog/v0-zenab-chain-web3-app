@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Wind, Droplet, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { validateInputs, InputValues, ValidationError } from '@/lib/validation';
@@ -29,21 +30,18 @@ export function EISForm({ onSubmit, isLoading = false }: EISFormProps) {
       ...prev,
       [name]: value,
     }));
-    // Clear error for this field when user starts typing
     setErrors((prev) => prev.filter((e) => e.field !== name));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validate inputs
     const validationErrors = validateInputs(values);
     if (validationErrors.length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    // Clear errors if validation passed
     setErrors([]);
 
     try {
@@ -57,80 +55,71 @@ export function EISForm({ onSubmit, isLoading = false }: EISFormProps) {
     }
   };
 
+  const fields = [
+    {
+      id: 'co2',
+      label: 'CO2 (ppm)',
+      icon: Wind,
+      example: 'e.g., 400',
+      range: 'Normal: <400 ppm | Dangerous: > 1000 ppm'
+    },
+    {
+      id: 'pm25',
+      label: 'PM2.5 (μg/m³)',
+      icon: Droplet,
+      example: 'e.g., 12',
+      range: 'Normal: < 12 μg/m³ | Dangerous: > 35 μg/m³'
+    },
+    {
+      id: 'pm10',
+      label: 'PM10 (μg/m³)',
+      icon: Gauge,
+      example: 'e.g., 50',
+      range: 'Normal: < 50 μg/m³ | Dangerous: > 150 μg/m³'
+    }
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-6">
-      <div className="space-y-2">
-        <label htmlFor="co2" className="block text-sm font-medium text-foreground">
-          CO2 Level (0-500)
-        </label>
-        <Input
-          id="co2"
-          name="co2"
-          type="number"
-          placeholder="Enter CO2 level"
-          value={values.co2}
-          onChange={handleChange}
-          disabled={isLoading}
-          className={getFieldError('co2') ? 'border-red-500 border-2' : ''}
-          min="0"
-          max="500"
-          step="0.1"
-        />
-        {getFieldError('co2') && (
-          <p className="text-sm text-red-500">{getFieldError('co2')}</p>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="pm25" className="block text-sm font-medium text-foreground">
-          PM2.5 Level (0-500)
-        </label>
-        <Input
-          id="pm25"
-          name="pm25"
-          type="number"
-          placeholder="Enter PM2.5 level"
-          value={values.pm25}
-          onChange={handleChange}
-          disabled={isLoading}
-          className={getFieldError('pm25') ? 'border-red-500 border-2' : ''}
-          min="0"
-          max="500"
-          step="0.1"
-        />
-        {getFieldError('pm25') && (
-          <p className="text-sm text-red-500">{getFieldError('pm25')}</p>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="pm10" className="block text-sm font-medium text-foreground">
-          PM10 Level (0-500)
-        </label>
-        <Input
-          id="pm10"
-          name="pm10"
-          type="number"
-          placeholder="Enter PM10 level"
-          value={values.pm10}
-          onChange={handleChange}
-          disabled={isLoading}
-          className={getFieldError('pm10') ? 'border-red-500 border-2' : ''}
-          min="0"
-          max="500"
-          step="0.1"
-        />
-        {getFieldError('pm10') && (
-          <p className="text-sm text-red-500">{getFieldError('pm10')}</p>
-        )}
-      </div>
+      {fields.map((field) => {
+        const Icon = field.icon;
+        return (
+          <div key={field.id} className="space-y-2">
+            <div className="flex items-center gap-2 mb-3">
+              <Icon className="w-5 h-5 text-cyan-400" />
+              <label htmlFor={field.id} className="block text-sm font-medium text-white">
+                {field.label}
+              </label>
+            </div>
+            <Input
+              id={field.id}
+              name={field.id}
+              type="number"
+              placeholder={field.example}
+              value={values[field.id as keyof InputValues]}
+              onChange={handleChange}
+              disabled={isLoading}
+              className={`bg-slate-800 border-slate-700 text-white placeholder-slate-500 ${
+                getFieldError(field.id) ? 'border-red-500 border-2' : ''
+              }`}
+              min="0"
+              max="500"
+              step="0.1"
+            />
+            <p className="text-xs text-slate-400 mt-1">{field.range}</p>
+            {getFieldError(field.id) && (
+              <p className="text-sm text-red-500">{getFieldError(field.id)}</p>
+            )}
+          </div>
+        );
+      })}
 
       <Button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-2 rounded-lg transition-all duration-200"
+        className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 rounded-lg transition-all duration-200 mt-8"
       >
-        {isLoading ? 'Verifying on Algorand...' : 'Verify on Algorand'}
+        {isLoading ? 'Verifying on Algorand...' : 'Verify'}
       </Button>
     </form>
   );
