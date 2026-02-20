@@ -1,5 +1,6 @@
 🌱 ZENAB Chain
 
+
 Decentralized Environmental Sustainability Verification System
 
 
@@ -61,9 +62,10 @@ Algorand Smart Contract (PyTEAL – Deployed using AlgoKit)
             ↓
 Algorand Testnet (Publicly Verifiable via AlgoExplorer)
 
+
+
+
 ⚙️ Smart Contract Logic
-
-
 
 
 The PyTEAL smart contract performs deterministic validation.
@@ -174,17 +176,6 @@ cd zenab-chain
 2️⃣ Deploy Smart Contract
 algokit project deploy testnet
 
-
-3️⃣ Configure Environment Variables (Vercel)
-APP_ID=755800526
-SIGNER_MNEMONIC=your_mnemonic_here
-ALGOD_SERVER=https://testnet-api.algonode.cloud
-ALGOD_PORT=443
-ALGOD_TOKEN=
-
-4️⃣ Run Frontend Locally
-npm install
-npm run dev
 
 
 
