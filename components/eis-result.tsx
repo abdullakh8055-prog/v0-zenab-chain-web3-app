@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button';
 
 export interface EISResultData {
   eis: number;
+  status?: 'saved' | 'denied';
+  message?: string;
+  submissionId?: string;
   txId?: string;
   explorerTx?: string;
   explorerApp?: string;
-  status?: string;
   error?: string;
 }
 

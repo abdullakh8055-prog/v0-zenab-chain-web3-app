@@ -1,15 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import { Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { EISForm } from '@/components/eis-form';
 import { EISGauge } from '@/components/eis-gauge';
 import { StatCards } from '@/components/stat-cards';
 import { EISResultData } from '@/components/eis-result';
 
+interface Stats {
+  totalRecords: number;
+  verifiedCount: number;
+  avgEIS: number;
+}
+
 export default function Home() {
   const [result, setResult] = useState<EISResultData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [stats, setStats] = useState<Stats>({ totalRecords: 0, verifiedCount: 0, avgEIS: 0 });
+
+  // Fetch stats on mount and after each submission
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/verify');
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    }
+  };
 
   const handleFormSubmit = async (co2: number, pm25: number, pm10: number) => {
     setIsLoading(true);
@@ -31,6 +52,8 @@ export default function Home() {
         });
       } else {
         setResult(data);
+        // Fetch updated stats after submission
+        await fetchStats();
       }
     } catch (error) {
       console.error('API error:', error);
@@ -73,12 +96,12 @@ export default function Home() {
             Decentralized Environmental Verification
           </h2>
           <p className="text-slate-400 text-lg leading-relaxed">
-            Submit air quality data to compute an Environmental Impact Score. Scores at or above 70 are permanently verified on the Algorand Testnet blockchain using a PyTEAL smart contract.
+            Submit air quality data to compute an Environmental Impact Score. Scores below 80 are saved locally. Scores at or above 80 are denied and not recorded.
           </p>
         </div>
 
         {/* Stats Cards */}
-        <StatCards verifiedCount={0} totalRecords={0} avgEIS={0} />
+        <StatCards verifiedCount={stats.verifiedCount} totalRecords={stats.totalRecords} avgEIS={stats.avgEIS} />
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -110,21 +133,35 @@ export default function Home() {
                 <EISForm onSubmit={handleFormSubmit} isLoading={isLoading} />
               ) : (
                 <div className="space-y-4">
-                  <div className="rounded-lg bg-green-900/20 border border-green-700 p-4">
-                    <p className="text-green-200 text-sm font-medium mb-2">Score Verified</p>
-                    <p className="text-white text-2xl font-bold">{result.eis.toFixed(2)}</p>
+                  {/* Status Display */}
+                  <div className={`rounded-lg p-4 ${
+                    result.status === 'saved' 
+                      ? 'bg-green-900/20 border border-green-700' 
+                      : 'bg-red-900/20 border border-red-700'
+                  }`}>
+                    <p className={`text-sm font-medium mb-2 ${
+                      result.status === 'saved' 
+                        ? 'text-green-200' 
+                        : 'text-red-200'
+                    }`}>
+                      {result.status === 'saved' ? 'Data Saved' : 'Denied'}
+                    </p>
+                    <p className="text-white text-2xl font-bold">EIS: {result.eis.toFixed(2)}</p>
                   </div>
+
                   {result.error && (
                     <div className="rounded-lg bg-red-900/20 border border-red-700 p-4">
                       <p className="text-red-200 text-sm">{result.error}</p>
                     </div>
                   )}
-                  {result.txId && (
+                  
+                  {result.submissionId && (
                     <div className="rounded-lg bg-slate-800/50 border border-slate-700 p-4">
-                      <p className="text-slate-400 text-xs mb-2">Transaction ID</p>
-                      <code className="text-cyan-400 text-xs font-mono break-all">{result.txId}</code>
+                      <p className="text-slate-400 text-xs mb-2">Submission ID</p>
+                      <code className="text-cyan-400 text-xs font-mono break-all">{result.submissionId}</code>
                     </div>
                   )}
+
                   <button
                     onClick={handleReset}
                     className="w-full px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-semibold transition-colors"
