@@ -62,6 +62,16 @@ Algorand Smart Contract (PyTEAL – Deployed using AlgoKit)
             ↓
 Algorand Testnet (Publicly Verifiable via AlgoExplorer)
 
+Run Smart Contract:
+  smart-contract/zenab/projects/zenab/
+
+Run Frontend:
+  frontend/
+
+Vercel API:
+  api/verify.js  (or frontend/api/verify.js depending on setup)
+
+
 
 
 
